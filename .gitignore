@@ -1,0 +1,7 @@
+DanielDemi/.DS_Store
+DanielDemi/Thumbs.db
+DanielDemi/db.json
+DanielDemi/*.log
+DanielDemi/node_modules/
+DanielDemi/public/
+DanielDemi/.deploy*/
