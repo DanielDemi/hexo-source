@@ -6,20 +6,20 @@ date: 2018-05-22 20:13:29
 categories: jquery
 tags: jquery
 ---
-#1. jquery 最外面有立即执行函数(防止污染，防止代码冲突)
+## 1. jquery 最外面有立即执行函数(防止污染，防止代码冲突)
 ```
 (function( window, undefined ) {
     // 内容
 })( window );
 ```
-#2. 如何对外暴露jquery呢？
+## 2. 如何对外暴露jquery呢？
 ```
 if ( typeof window === "object" && typeof window.document === "object" ) {
     window.jQuery = window.$ = jQuery;
 }
 ```
 jquery通过把jQuery和$挂在到window上，那么就可以使用了。
-#3.如何避免冲突呢
+## 3.如何避免冲突呢
 ```
 _jQuery = window.jQuery,
 
@@ -41,7 +41,7 @@ noConflict: function( deep ) {
 ```
 通过一开始保留全局变量，最后在通过noConflict来改变jquery命名
 
-#整理架构划分： （jquery是面向对象的）
+## 整理架构划分： （jquery是面向对象的）
 1. (21-94)行：定义了一些变量和函数 jQuery = function() {}
 2. (96-283)行: 定义了jquery的原型jQuery.fn = jQuery.prototype（fn即代表原型） 即给jQuery添加一些方法和属性
 3. (285-347)行: extend: jQuery的继承方法（可用于插件和方法的扩展）
@@ -61,4 +61,3 @@ noConflict: function( deep ) {
 17. (8585, 8792)行：offset(): 位置和尺寸的方法
 18. (8804, 8821)行：jQ支持模块化的模式
 19. (8826) window.jQuery = window.$ = jQuery
-
