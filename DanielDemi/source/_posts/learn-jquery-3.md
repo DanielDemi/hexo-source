@@ -218,6 +218,66 @@ length: 0, // 记录节点长度
 ```
 ## 一些方法
 ```
+// 转数组（将节点类数组对象转换为数组）
+toArray: function() {
+    return core_slice.call( this );
+},
+// 转原生集合（）
+get: function( num ) {
+    return num == null ?
+    // 不传参，则返回整个数组
+    this.toArray() :
+    // 如果参数大于0，则从前往后数，参数小于0则从后往前数，返回指定的元素
+    ( num < 0 ? this[ this.length + num ] : this[ num ] );
+},
+//JQ对象的入栈（ 源码内部使用比较多）先进后出
+pushStack: function( elems ) {
 
+    var ret = jQuery.merge( this.constructor(), elems );
+    // 和end方法公用，回溯上一层，链式调用
+    ret.prevObject = this;
+    ret.context = this.context;
+
+    return ret;
+},
+// 例如demo: $(div).pushStack($(span)).css().end().css();
+end: function() {
+    return this.prevObject || this.constructor(null);
+},
+// 切割字符串  也使用入栈方法，这样就也可以配合end链式调用；
+// 之后用到pushStack都是同理
+slice: function() {
+    return this.pushStack( core_slice.apply( this, arguments ) );
+},
+// 遍历  调用jQuery下的工具方法each实现
+each: function( callback, args ) {
+    return jQuery.each( this, callback, args );
+},
+// dom加载回调函数
+ready: function( fn ) {
+    jQuery.ready.promise().done( fn );
+
+    return this;
+},
+// 找集合中的第一项
+first: function() {
+    return this.eq( 0 );
+},
+// 找集合中的最后一项
+last: function() {
+    return this.eq( -1 );
+},
+// 找集合中的指定项
+eq: function( i ) {
+    var len = this.length,
+        j = +i + ( i < 0 ? len : 0 );
+    return this.pushStack( j >= 0 && j < len ? [ this[j] ] : [] );
+},
+// 遍历
+map: function( callback ) {
+    return this.pushStack( jQuery.map(this, function( elem, i ) {
+        return callback.call( elem, i, elem );
+    }));
+},
 ```
 
