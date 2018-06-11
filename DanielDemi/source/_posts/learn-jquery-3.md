@@ -279,5 +279,9 @@ map: function( callback ) {
         return callback.call( elem, i, elem );
     }));
 },
+
+push: core_push,
+sort: [].sort,
+splice: [].splice
 ```
 
