@@ -36,27 +36,27 @@ jQuery.extend({
 jQuery.extend({
 	// 唯一jQuery字符串
 	expando: "jQuery" + ( core_version + Math.random() ).replace( /\D/g, "" ),
-
+	// 如果$或jquery被使用了，那么需要使用该函数来更名，防止和其他冲突
 	noConflict: function( deep ) {
 		if ( window.$ === jQuery ) {
-			window.$ = _$;
+			window.$ = _$; // 针对$一开始被复制 ，现在还原
 		}
 
 		if ( deep && window.jQuery === jQuery ) {
-			window.jQuery = _jQuery;
+			window.jQuery = _jQuery; // 针对$一开始被复制 ，现在还原,并且用参数true来控制
 		}
 
 		return jQuery;
 	},
 
-	// Is the DOM ready to be used? Set to true once it occurs.
+	// DOM是否加载完成标志位
 	isReady: false,
 
-	// A counter to track how many items to wait for before
-	// the ready event fires. See #6781
+	// 等待次数
 	readyWait: 1,
 
-	// Hold (or release) the ready event
+	// 推迟reday触发 $.holdReady(true) 推迟， $.holdReady(false)再触发 
+	// 使用场景， ajax异步加载数据有先后关系时，可以使用
 	holdReady: function( hold ) {
 		if ( hold ) {
 			jQuery.readyWait++;
@@ -68,69 +68,62 @@ jQuery.extend({
 	// Handle when the DOM is ready
 	ready: function( wait ) {
 
-		// Abort if there are pending holds or we're already ready
+		// 第一次不进入这边，第二次开始进入，判断是否处于reday等待
 		if ( wait === true ? --jQuery.readyWait : jQuery.isReady ) {
 			return;
 		}
 
-		// Remember that the DOM is ready
+		// dom加载完毕
 		jQuery.isReady = true;
 
-		// If a normal DOM Ready event fired, decrement, and wait if need be
+		// 第一次进入后返回，如果有ready等待
 		if ( wait !== true && --jQuery.readyWait > 0 ) {
 			return;
 		}
 
-		// If there are functions bound, to execute
+		// 解析ready函数 $(function() {})
 		readyList.resolveWith( document, [ jQuery ] );
 
-		// Trigger any bound ready events
+		// 这种判断是否有reday事件，有就触发：$(doc).on('reday' ,func(){})
 		if ( jQuery.fn.trigger ) {
 			jQuery( document ).trigger("ready").off("ready");
 		}
 	},
 
-	// See test/unit/core.js for details concerning isFunction.
-	// Since version 1.3, DOM methods and functions like alert
-	// aren't supported. They return false on IE (#2968).
+	// 判断是否为函数
 	isFunction: function( obj ) {
 		return jQuery.type(obj) === "function";
 	},
-
+	// 判断是否为数组
 	isArray: Array.isArray,
-
+	// 判断是否为window
 	isWindow: function( obj ) {
 		return obj != null && obj === obj.window;
 	},
-
+	// 判断是否为数字
 	isNumeric: function( obj ) {
+		// 判断是否为NAN  和是否为有限数字
 		return !isNaN( parseFloat(obj) ) && isFinite( obj );
 	},
-
+	// 判断数据类型
 	type: function( obj ) {
 		if ( obj == null ) {
 			return String( obj );
 		}
-		// Support: Safari <= 5.1 (functionish RegExp)
+		// typeof 无法区分对象的详细类型
 		return typeof obj === "object" || typeof obj === "function" ?
 			class2type[ core_toString.call(obj) ] || "object" :
 			typeof obj;
 	},
-
+    //  是否为对象自变量:json 或new对象
 	isPlainObject: function( obj ) {
-		// Not plain objects:
-		// - Any object or value whose internal [[Class]] property is not "[object Object]"
-		// - DOM nodes
-		// - window
+		// 如果不是对象或者节点，window直接排除（节点和window也返回object）
 		if ( jQuery.type( obj ) !== "object" || obj.nodeType || jQuery.isWindow( obj ) ) {
 			return false;
 		}
 
-		// Support: Firefox <20
-		// The try/catch suppresses exceptions thrown when attempting to access
-		// the "constructor" property of certain host objects, ie. |window.location|
-		// https://bugzilla.mozilla.org/show_bug.cgi?id=814622
 		try {
+			// 判断是否有构造函数，以及判断原型链上的方法是否有
 			if ( obj.constructor &&
 					!core_hasOwn.call( obj.constructor.prototype, "isPrototypeOf" ) ) {
 				return false;
@@ -139,19 +132,18 @@ jQuery.extend({
 			return false;
 		}
 
-		// If the function hasn't returned already, we're confident that
-		// |obj| is a plain object, created by {} or constructed with new Object
 		return true;
 	},
-
+	// 是否为空
 	isEmptyObject: function( obj ) {
 		var name;
+		// 通过遍历自身参数
 		for ( name in obj ) {
 			return false;
 		}
 		return true;
 	},
-
+	// 抛出错误
 	error: function( msg ) {
 		throw new Error( msg );
 	},
