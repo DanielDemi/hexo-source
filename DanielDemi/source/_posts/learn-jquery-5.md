@@ -28,7 +28,21 @@ jQuery.extend({
     parseHTML(): 解析节点
     parseJSON(): 解析JSON
     noop(): 空函数
-    gl
+    globaEval(): 全局解析JS
+	camelCase(): 转驼峰
+	nodeName(): 是否指定节点名（内部）
+	each(): 遍历集合
+	trim(): 去前后空格
+	makeArray(): 类数组转真数组
+	inArray()： 数组版indexof
+	merge(): 合并数组
+	grep(): 过滤新数组
+	map()： 映射新数组
+	guid: 唯一标识符
+	proxy(): 改this指向
+	access(): 多功能值操作
+	now(): 当前时间
+	swap(): css交换
 })
 ```
 接下来是源码 正在研读中----
@@ -147,10 +161,7 @@ jQuery.extend({
 	error: function( msg ) {
 		throw new Error( msg );
 	},
-
-	// data: string of html
-	// context (optional): If specified, the fragment will be created in this context, defaults to document
-	// keepScripts (optional): If true, will include scripts passed in the html string
+	// 解析节点
 	parseHTML: function( data, context, keepScripts ) {
 		if ( !data || typeof data !== "string" ) {
 			return null;
@@ -164,7 +175,6 @@ jQuery.extend({
 		var parsed = rsingleTag.exec( data ),
 			scripts = !keepScripts && [];
 
-		// Single tag
 		if ( parsed ) {
 			return [ context.createElement( parsed[1] ) ];
 		}
@@ -177,72 +187,71 @@ jQuery.extend({
 
 		return jQuery.merge( [], parsed.childNodes );
 	},
-
+	// 字符串转json，使用原声js
 	parseJSON: JSON.parse,
 
-	// Cross-browser xml parsing
+	// 字符串转xml
 	parseXML: function( data ) {
 		var xml, tmp;
+		// 数据不是字符串或空直接返回
 		if ( !data || typeof data !== "string" ) {
 			return null;
 		}
 
-		// Support: IE9
+		// 兼容IE9
 		try {
 			tmp = new DOMParser();
+			// ie9下 使用该方式解析必须是完整的xml(即标签是成对的)，不然会报错
+			// 其他浏览器出错会生成<parsererror>标签
 			xml = tmp.parseFromString( data , "text/xml" );
 		} catch ( e ) {
 			xml = undefined;
 		}
-
+		// ie9针对报错或生成不对的xml的处理
 		if ( !xml || xml.getElementsByTagName( "parsererror" ).length ) {
 			jQuery.error( "Invalid XML: " + data );
 		}
 		return xml;
 	},
-
+	// 空函数
 	noop: function() {},
 
-	// Evaluates a script in a global context
+	// 全局解析js, 把局部变量转变成全局的 
 	globalEval: function( code ) {
 		var script,
-				indirect = eval;
-
+				indirect = eval; // evel 先赋值，不然会当保留字符
+		// 去除前后空格
 		code = jQuery.trim( code );
 
 		if ( code ) {
-			// If the code includes a valid, prologue position
-			// strict mode pragma, execute code by injecting a
-			// script tag into the document.
+			// 是否严格模式下（严格模式下不支持 eval方法）
 			if ( code.indexOf("use strict") === 1 ) {
 				script = document.createElement("script");
 				script.text = code;
 				document.head.appendChild( script ).parentNode.removeChild( script );
 			} else {
-			// Otherwise, avoid the DOM node creation, insertion
-			// and removal by using an indirect global eval
 				indirect( code );
 			}
 		}
 	},
-
-	// Convert dashed to camelCase; used by the css and data modules
-	// Microsoft forgot to hump their vendor prefix (#9572)
+	// 转峰坨，eg. z-ms 转为 zMs  (ie转换 第一个需注意： -ms-s => ms-S, -moz-s => MozS)
+	// rmsPrefix: /^-ms-/ 正则
+	// rdashAlpha: /-([\da-z])/gi
 	camelCase: function( string ) {
 		return string.replace( rmsPrefix, "ms-" ).replace( rdashAlpha, fcamelCase );
 	},
-
+	// 是否为指定节点名 返回是否： eg nodeName(element.elementElement, 'html')为true
 	nodeName: function( elem, name ) {
 		return elem.nodeName && elem.nodeName.toLowerCase() === name.toLowerCase();
 	},
 
-	// args is for internal usage only
+	// 遍历集合 数组，类数组，json
 	each: function( obj, callback, args ) {
 		var value,
 			i = 0,
 			length = obj.length,
-			isArray = isArraylike( obj );
-
+			isArray = isArraylike( obj ); // 是否为数组或类数组对象
+		// 是否还有其他参数， 默认我们都是进入else
 		if ( args ) {
 			if ( isArray ) {
 				for ( ; i < length; i++ ) {
@@ -262,12 +271,11 @@ jQuery.extend({
 				}
 			}
 
-		// A special, fast, case for the most common use of each
 		} else {
 			if ( isArray ) {
 				for ( ; i < length; i++ ) {
 					value = callback.call( obj[ i ], i, obj[ i ] );
-
+					// 如果我们return false 则可以跳出each
 					if ( value === false ) {
 						break;
 					}
@@ -285,17 +293,18 @@ jQuery.extend({
 
 		return obj;
 	},
-
+	// 去除前后空格
 	trim: function( text ) {
-		return text == null ? "" : core_trim.call( text );
+		return text == null ? "" : core_trim.call( text ); // 使用js原声方法
 	},
 
-	// results is for internal usage only
+	// 类数组转数组
 	makeArray: function( arr, results ) {
 		var ret = results || [];
 
 		if ( arr != null ) {
 			if ( isArraylike( Object(arr) ) ) {
+				// merge后面介绍，合并数组
 				jQuery.merge( ret,
 					typeof arr === "string" ?
 					[ arr ] : arr
@@ -307,21 +316,24 @@ jQuery.extend({
 
 		return ret;
 	},
-
+	// 返回位置
 	inArray: function( elem, arr, i ) {
 		return arr == null ? -1 : core_indexOf.call( arr, elem, i );
 	},
-
+    // 合并数组或类对象 eg. merge([a, b], [c, d])  merge([a, b], {0: v, 1: d})
+	// merge({0: v, 1: d}, {0: v, 1: d})
 	merge: function( first, second ) {
 		var l = second.length,
 			i = first.length,
 			j = 0;
 
 		if ( typeof l === "number" ) {
+			// second为数组
 			for ( ; j < l; j++ ) {
 				first[ i++ ] = second[ j ];
 			}
 		} else {
+			// second为对象， 主要对内部使用
 			while ( second[j] !== undefined ) {
 				first[ i++ ] = second[ j++ ];
 			}
@@ -331,7 +343,7 @@ jQuery.extend({
 
 		return first;
 	},
-
+	// 过滤得到新数组（跟js中filter类型）
 	grep: function( elems, callback, inv ) {
 		var retVal,
 			ret = [],
@@ -339,10 +351,9 @@ jQuery.extend({
 			length = elems.length;
 		inv = !!inv;
 
-		// Go through the array, only saving the items
-		// that pass the validator function
 		for ( ; i < length; i++ ) {
 			retVal = !!callback( elems[ i ], i );
+			// return的值与第三个参数比较，是否需要保留
 			if ( inv !== retVal ) {
 				ret.push( elems[ i ] );
 			}
@@ -351,15 +362,14 @@ jQuery.extend({
 		return ret;
 	},
 
-	// arg is for internal usage only
+	// 得到新数组(跟原声js map一样功能)
 	map: function( elems, callback, arg ) {
 		var value,
 			i = 0,
 			length = elems.length,
 			isArray = isArraylike( elems ),
 			ret = [];
-
-		// Go through the array, translating each of the items to their
+		// 数组
 		if ( isArray ) {
 			for ( ; i < length; i++ ) {
 				value = callback( elems[ i ], i, arg );
@@ -368,8 +378,7 @@ jQuery.extend({
 					ret[ ret.length ] = value;
 				}
 			}
-
-		// Go through every key on the object,
+		// json对象
 		} else {
 			for ( i in elems ) {
 				value = callback( elems[ i ], i, arg );
@@ -380,7 +389,7 @@ jQuery.extend({
 			}
 		}
 
-		// Flatten any nested arrays
+		// 合并数组，避免出现复合数组   如return [2]  结果会变成[[2], [3]...]
 		return core_concat.apply( [], ret );
 	},
 
