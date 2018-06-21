@@ -199,7 +199,7 @@ socket.emit('my other event', { my: 'data' });
 </html>
 ```
 
-####3 基于AMQ的demo(目前还不知道服务器如何搭建，但客户端还是可以用的)
+#### 3. 基于AMQ的demo(目前还不知道服务器如何搭建，但客户端还是可以用的)
 demo里放了3种模式，主要就是Queue和topic，消费和发布
 Queue和topic的区别是一对多和多对多（QUEUE发送一个人消息之后，就消失了，而topic可以发送多个人）
 ```
