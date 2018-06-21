@@ -3,8 +3,8 @@ title: loading
 comments: true
 toc: true
 date: 2018-06-21 21:16:09
-categories: loading
-tags: loading
+categories: demo
+tags: demo
 ---
 # 这是一个效果还好的loading
 点这里看[源码](https://github.com/DanielDemi/base-demos)
