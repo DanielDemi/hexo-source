@@ -1,0 +1,16 @@
+.tag_button{
+    float: left;
+    box-sizing: border-box;
+    min-width: 96px;
+    margin: 16px 36px;
+    padding: 4px 8px;
+    font-size: 16px;
+    color: #999;
+    border: 1px solid #999;
+    text-align: center;
+    border-radius: 4px;
+}
+.tag_button:hover{
+    color: chartreuse;
+    border: 1px solid chartreuse;
+}
